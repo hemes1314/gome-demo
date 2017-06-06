@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://ds.gome.com.cn/schema/taskflow"
+           targetNamespace="http://ds.gome.com.cn/schema/taskflow"
+           elementFormDefault="qualified">
+
+    <xs:element name="taskflows">
+        <xs:annotation>
+            <xs:documentation>
+                TaskFlow高效业务流程编排工具，支持分布式事务、动态编排业务流程。使用手册：http://wiki.ds.gome.com.cn/pages/viewpage.action?pageId=4260102
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="taskflow" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="taskflow">
+        <xs:annotation>
+            <xs:documentation>
+                任务流
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="filters" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            任务流过滤器集合
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="task" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="start-task" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="task">
+        <xs:annotation>
+            <xs:documentation>
+                任务，任务流中的最小执行单元，执行对应的用户业务逻辑处理代码
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="invoke" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="results" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="results">
+        <xs:annotation>
+            <xs:documentation>
+                任务路由集合
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="result" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            任务路由从上到下逐个匹配路由规则，如果匹配成功就进入指定的下一个人任务，如果匹配失败将继续匹配，如果所有规则都未能匹配将抛出异常中止流程。
+
+                            路由规则支持SpEL表达式，表达式执行结果需是boolean值，true匹配成功，false匹配失败。表达式内置3个变量:
+                            _R：任务返回值
+                            _P：用户参数
+                            _C：任务流上下文
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="result">
+        <xs:complexType>
+            <xs:attribute name="next-task" type="xs:string" use="required"/>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="invoke">
+        <xs:annotation>
+            <xs:documentation>
+                用户业务逻辑处理器，用户可选实现com.gome.architect.taskflow.TaskHandler接口的handle方法编写业务逻辑处理代码
+
+                例：
+                public class SendMsgHandler implements TaskHandler {
+                @Override
+                public Object handle(Object params, TaskFlowContexttaskFlowContext) throws Exception {
+                ...
+                }
+                }
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="method" type="xs:string"/>
+            <xs:attribute name="class" type="xs:string"/>
+            <xs:attribute name="bean" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="filters">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="filter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            任务流过滤器，可以对任务流进行拦截扩展，过滤器需实现com.gome.architect.taskflow.filter.Filter接口
+
+                            例：
+                            public class StatFilter implements Filter{
+                            @Override
+                            public void doFilter(Object params, TaskFlowContexttaskFlowContext, FilterChainfilterChain)
+                            throws Exception {
+                            filterChain.doFilter(params, taskFlowContext);
+                            }
+                            }
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="filter">
+        <xs:complexType>
+            <xs:attribute name="class" type="xs:string"/>
+            <xs:attribute name="bean" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

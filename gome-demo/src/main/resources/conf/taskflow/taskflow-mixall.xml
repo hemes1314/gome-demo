@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taskflows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://ds.gome.com.cn/schema/taskflow" 
+	xsi:schemaLocation="http://ds.gome.com.cn/schema/taskflow ./taskflow.xsd">
+	
+	
+	
+</taskflows>
